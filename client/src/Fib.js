@@ -7,15 +7,43 @@ const Fib = () => {
   const [index, setIndex] = useState('');
 
   const fetchSeenIndexes = async () => {
-    const result = await axios.get('/api/values/all');
-    console.log('fetchSeenIndexes', result);
-    setSeenIndexes(result.data);
+    try {
+      const result = await axios.get('/api/values/all');
+      console.log('fetchSeenIndexes', result);
+      setSeenIndexes(result.data);
+    } catch (error) {
+      console.error(error)
+    }
   };
 
   const fetchValues = async () => {
-    const result = await axios.get('/api/values/current');
-    console.log('fetchValues', result);
-    setValues(result.data);
+    try {
+      const result = await axios.get('/api/values/current');
+      console.log('fetchValues', result);
+      setValues(result.data);
+    } catch (error) {
+      console.error(error)
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const result = await axios.post('/api/values', {
+        index
+      });
+  
+      if (result.data.working) {
+        setIndex('');
+        await fetchSeenIndexes()
+        await fetchValues();
+      } else {
+        throw new Error('Error when posted new index');
+      }
+    } catch (error) {
+      console.error(error)
+    }
+    
   };
 
   useEffect(() => {
@@ -26,17 +54,7 @@ const Fib = () => {
     fetchValues();
   }, [])
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    await axios.post('/api/values', {
-      index
-    });
-
-    const newSeenIndexes = await axios.get('/api/values/all');
-    setSeenIndexes(newSeenIndexes.data);
-    const newValues = await axios.get('/api/values/current');
-    setValues(newValues.data);
-  };
+ 
 
   const renderSeenIndexes = () => {
     console.log('renderSeenIndexes', seenIndexes);
